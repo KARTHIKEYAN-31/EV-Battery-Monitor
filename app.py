@@ -201,7 +201,7 @@ with tab2:
                                                         'Weather': [Weather],
                                                         'Battery Drained': [0],
                                                         'Distance [m]': [0],
-                                                        'Acceleration [m/s^2]': [0]}))['prediction_label'])[0] + 12
+                                                        'Acceleration [m/s^2]': [0]}))['prediction_label'])[0] + 5
 
             df1.loc[len(df1)] = [time_s, Velocity_kmh, elevation_m, Throttle, Motor_Torque, Battery_Voltage, Battery_Current, bat_temp, route, Weather, 0, 0, 0]
         
@@ -261,7 +261,7 @@ with tab2:
                                                         'Weather': [Weather],
                                                         'Battery Drained': [0],
                                                         'Distance [m]': [0],
-                                                        'Acceleration [m/s^2]': [Acceleration]}))['prediction_label'])[0]+12
+                                                        'Acceleration [m/s^2]': [Acceleration]}))['prediction_label'])[0]+10
             df1.loc[len(df1)] = [time_s, Velocity_kmh, elevation_m, Throttle, Motor_Torque, Battery_Voltage, Battery_Current, bat_temp, route, Weather, Battery_drained, Acceleration, distance_m]
         # Wait for 1 second before generating new data
 
@@ -293,38 +293,47 @@ with tab2:
         if "mean_temp" not in st.session_state:
             st.session_state["mean_temp"] = 0
 
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.write("Minimum Temperature:", st.session_state["min_temp"])
-        with col2:
-            st.write("Average Temperature:", st.session_state["mean_temp"])
-        with col3:
-            st.write("Maximum Temperature:", st.session_state["max_temp"])
+       
         # Start generating data in a separate thread
         
+        max = df1['Battery Temperature [°C]'].max()
+        min = df1['Battery Temperature [°C]'].min()
+        mean = df1['Battery Temperature [°C]'].mean()
+
+        #bar = st.bar_chart(pd.DataFrame({'Max': [max], 'Min': [min], 'Mean': [mean]}))
         
 
         while True:
             generate_data()
             fig1.add_rows(pd.DataFrame({
-                'Velocity [km/h]': [df1.iloc[-1]['Velocity [km/h]']]
+                'Velocity [km/h]': [df1.iloc[-1]['Velocity [km/h]']],
+                'Time [s]': [df1.iloc[-1]['Velocity [km/h]']]
             }))
             fig2.add_rows(pd.DataFrame({
-                'Distance [m]': [int(df1.iloc[-1]['Distance [m]'])]
+                'Distance [m]': [int(df1.iloc[-1]['Distance [m]'])],
+                'Time [s]': [int(df1.iloc[-1]['Distance [m]'])]
             }))
             fig3.add_rows(pd.DataFrame({
-                'Acceleration [m/s^2]': [df1.iloc[-1]['Acceleration [m/s^2]']]
+                'Acceleration [m/s^2]': [df1.iloc[-1]['Acceleration [m/s^2]']],
+                'Time [s]': [df1.iloc[-1]['Acceleration [m/s^2]']]
             }))
             fig4.add_rows(pd.DataFrame({
-                'Battery Current [A]': [df1.iloc[-1]['Battery Current [A]']]
+                'Battery Current [A]': [df1.iloc[-1]['Battery Current [A]']],
+                'Time [s]': [df1.iloc[-1]['Battery Current [A]']]
             }))
             fig5.add_rows(pd.DataFrame({
-                'Battery Temperature [°C]': [df1.iloc[-1]['Battery Temperature [°C]']]
+                'Battery Temperature [°C]': [df1.iloc[-1]['Battery Temperature [°C]']],
+                'Time [s]': [df1.iloc[-1]['Battery Temperature [°C]']]
             }))
-            st.session_state["min_temp"] = min(df1['Battery Temperature [°C]'])
-            st.session_state["max_temp"] = max(df1['Battery Temperature [°C]'])
-            st.session_state["mean_temp"] = df1['Battery Temperature [°C]'].mean()
+
+
+            #max = df1['Battery Temperature [°C]'].max()
+            #min = df1['Battery Temperature [°C]'].min()
+            #mean = df1['Battery Temperature [°C]'].mean()
+
+            #bar.add_rows(pd.DataFrame({'Max': [max], 'Min': [min], 'Mean': [mean]}))
+            
             time.sleep(2)
-            if df1.shape[0] > 40:
+            if df1.shape[0] > 100:
                 break
             
